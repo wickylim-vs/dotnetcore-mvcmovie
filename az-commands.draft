@@ -1,0 +1,20 @@
+set resourcegrp "app-svc-grp"
+set plan "appsvcplan-nitrocoldbrew"
+set appname "mvcmovie-nitrocoldbrew"
+set repourl "https://github.com/wickylim-vs/dotnetcore-mvcmovie.git"
+
+#   create resource group
+az group create --location southeastasia --name $resourcegrp
+
+#   create app service
+az appservice plan create -n $plan -g $resourcegrp --sku f1 --is-linux
+
+#   create web app
+az webapp create -n $appname -g $resourcegrp -p $plan -r "DOTNETCORE|3.1"
+
+#   update deployment git repo config
+az webapp deployment source config -n $appname -g $resourcegrp -u $repourl --branch master --manual-integration
+
+#   add deployment slot, and configure deployment repo on new slot
+az webapp deployment slot create -n $appname -g $resourcegrp -s staging
+az webapp deployment source config -n $appname -g $resourcegrp -s staging -u $repourl --branch master --manual-integration
